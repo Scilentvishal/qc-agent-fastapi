@@ -1,0 +1,22 @@
+{
+    "sop_id": "SOP-QC-701",
+    "title": "Standard Quality Release Specifications for Oral Tablets",
+    "version": "2.4",
+    "specifications": {
+        "Assay": {
+            "min": 98.0,
+            "max": 102.0,
+            "unit": "%"
+        },
+        "Dissolution": {
+            "min": 80.0,
+            "max": 100.0,
+            "unit": "%"
+        },
+        "pH": {
+            "min": 5.8,
+            "max": 6.8,
+            "unit": "pH"
+        }
+    }
+}
