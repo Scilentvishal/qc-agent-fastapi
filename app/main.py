@@ -1,9 +1,11 @@
 # app/main.py
+import utils.session
 from app.services.batch_service import ACTIVE_SOP_SPECIFICATIONS
 from app.core.validator import validate_qc_batch
 from app.schemas.schemas import BatchValidationRequest
 from fastapi import FastAPI
 from app.api.batches import router as batch_router
+from app.api.sops import router as sop_router
 
 # 1. Initialize FastAPI Application
 app = FastAPI(
@@ -14,6 +16,7 @@ app = FastAPI(
 
 # 2. Include Modular Routers
 app.include_router(batch_router)
+app.include_router(sop_router)
 
 
 # 3. System & Health Endpoints
