@@ -1,4 +1,5 @@
 # app/api/batches.py
+from app.services.llm_service import explain_qc_findings_with_llm
 from fastapi import APIRouter, HTTPException, status
 from app.schemas.schemas import BatchValidationRequest
 from app.services import batch_service
@@ -60,4 +61,39 @@ def validate_batch(batch_id: str) -> dict:
         "batch_id": batch_id,
         "is_approved": report["is_approved"],
         "audit_report": report
+    }
+
+
+@router.post("/{batch_id}/explain-findings", tags=["AI Investigation"])
+def explain_batch_findings(batch_id: str) -> dict:
+    """
+    Retrieves a stored batch, validates it deterministically, and asks
+    the local LLM to explain the findings with recommended actions.
+    """
+    batch = batch_service.get_batch_by_id(batch_id)
+    if not batch:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Batch '{batch_id}' not found."
+        )
+    # 1. Ensure batch has deterministic validation results
+    report = batch.get("last_audit_report")
+    if not report:
+        report = batch_service.validate_existing_batch(batch_id)
+    # 2. Call local LLM service
+    llm_result = explain_qc_findings_with_llm(
+        batch_id=batch_id,
+        compound_name=batch.get("compound_name", "Unknown"),
+        audit_report=report
+    )
+    if not llm_result["success"]:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=llm_result["error"]
+        )
+    return {
+        "batch_id": batch_id,
+        "compound": batch.get("compound_name"),
+        "audit_report": report,
+        "ai_explanation": llm_result["analysis"]
     }
